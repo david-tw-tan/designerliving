@@ -28,12 +28,20 @@ h1 {
     position: absolute;
     right: 16px;
     top: 16px;
+
     padding: 8px 12px;
+
     border-radius: 999px;
     border: 1px solid #ddd;
+
     background: white;
+
     cursor: pointer;
-    font-size: 14px;
+
+    font-size: 20px;
+    font-weight: 600;
+
+    color: gold;
 }
 
 /* FILTERS */
@@ -236,7 +244,7 @@ h1 {
 
 <header>
     <h1>Furniture Moodboard</h1>
-    <div id="bookmarkBtn">Bookmarked (0)</div>
+    <div id="bookmarkBtn">★ <span id="bookmarkCount">0</span></div>
 
     <div class="filters">
       <button class="filter-btn" data-cat="light_luxury">Light Luxury</button>
@@ -417,7 +425,8 @@ const bookmarkBtn=document.getElementById("bookmarkBtn");
 const bookmarkView=document.getElementById("bookmarkView");
 
 function updateBookmarkUI(){
-    bookmarkBtn.textContent=`Bookmarked (${BOOKMARKS.size})`;
+    document.getElementById("bookmarkCount").textContent =
+        BOOKMARKS.size;
 }
 
 bookmarkBtn.onclick=()=>{
