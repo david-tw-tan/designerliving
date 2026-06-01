@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Furniture Moodboard</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #f6f6f6;
+}
+
+/* HEADER */
+header {
+    padding: 16px;
+    text-align: center;
+    position: relative;
+}
+
+h1 {
+    margin: 0;
+    font-size: 1.6rem;
+}
+
+#bookmarkBtn {
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* FILTERS */
+.filters {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid #ccc;
+    background: white;
+    cursor: pointer;
+}
+
+.filter-btn.active {
+    background: #222;
+    color: white;
+}
+
+/* GRID */
+#gallery {
+    column-count: 4;
+    column-gap: 16px;
+    padding: 16px;
+    max-width: 1600px;
+    margin: auto;
+}
+
+@media (max-width: 1200px) { #gallery { column-count: 3; } }
+@media (max-width: 900px) { #gallery { column-count: 2; } }
+@media (max-width: 600px) { #gallery { column-count: 2 !important; } }
+
+.card {
+    break-inside: avoid;
+    margin-bottom: 16px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: white;
+    position: relative;
+    cursor: pointer;
+
+    opacity: 0;
+    transform: translateY(40px);
+}
+
+@keyframes cardReveal {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card img {
+    width: 100%;
+    display: block;
+}
+
+/* thumbnail bookmark star */
+.star-thumb {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 24px;
+    color: gold;
+    display: none;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* LIGHTBOX */
+#lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.lightbox-content {
+    position: relative;
+    max-width: 90%;
+    max-height: 90%;
+}
+
+.lightbox-content img {
+    width: 100%;
+    max-height: 90vh;
+    border-radius: 12px;
+}
+
+/* ⭐ IMPROVED LIGHTBOX STAR (bigger + obvious) */
+#starBtn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+
+    font-size: 34px;
+
+    cursor: pointer;
+
+    background: none;
+    border: none;
+
+    text-shadow: 0 4px 10px rgba(0,0,0,0.35);
+
+    transition: transform 0.15s ease;
+}
+
+#starBtn:hover {
+    transform: scale(1.1);
+}
+
+#starBtn:hover {
+    transform: scale(1.1);
+}
+
+#starBtn:active {
+    transform: scale(0.95);
+}
+
+/* BOOKMARK PAGE */
+#bookmarkView {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    overflow-y: auto;
+    z-index: 2000;
+    color: white;
+    padding: 20px;
+}
+
+.bookmark-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.bookmark-header h2 {
+    margin: 0;
+}
+
+.bookmark-grid {
+    column-count: 1;
+    column-gap: 0;
+    max-width: 750px;
+    margin: auto;
+    padding: 10px;
+}
+
+.bookmark-item {
+    background: white;
+    color: black;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 42px;
+}
+
+.bookmark-item img {
+    width: 100%;
+    display: block;
+}
+
+.caption {
+    padding: 10px;
+    font-size: 13px;
+    color: #444;
+}
+
+#emptyState {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    min-height: 50vh;
+
+    text-align: center;
+
+    color: #777;
+    font-size: 1.1rem;
+    font-weight: 500;
+
+    padding: 20px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Furniture Moodboard</h1>
+    <div id="bookmarkBtn">Bookmarked (0)</div>
+
+    <div class="filters">
+      <button class="filter-btn" data-cat="light_luxury">Light Luxury</button>
+      <button class="filter-btn" data-cat="minimalist">Minimalist</button>
+      <button class="filter-btn" data-cat="trendy">Trendy</button>
+    </div>
+</header>
+
+<div id="gallery"></div>
+
+<div id="emptyState">
+    Choose your desired style to get started.
+</div>
+
+<div id="gallery"></div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox">
+    <div class="lightbox-content">
+        <div id="starBtn">☆</div>
+        <img id="lightboxImg" />
+    </div>
+</div>
+
+<!-- BOOKMARK PAGE -->
+<div id="bookmarkView"></div>
+
+<script>
+const DATA = {
+    light_luxury: 17,
+    minimalist: 49,
+    trendy: 28
+};
+
+let ACTIVE = new Set();
+let BOOKMARKS = new Map();
+
+function build() {
+    const arr = [];
+    for (let i=1;i<=DATA.light_luxury;i++)
+        arr.push({src:`light_luxury/item${i}.jpeg`,cat:"light_luxury",file:`item${i}.jpeg`});
+    for (let i=1;i<=DATA.minimalist;i++)
+        arr.push({src:`minimalist/item${i}.jpeg`,cat:"minimalist",file:`item${i}.jpeg`});
+    for (let i=1;i<=DATA.trendy;i++)
+        arr.push({src:`trendy/item${i}.jpeg`,cat:"trendy",file:`item${i}.jpeg`});
+    return arr;
+}
+
+let MASTER = build();
+
+function shuffle(a){
+    for(let i=a.length-1;i>0;i--){
+        let j=Math.floor(Math.random()*(i+1));
+        [a[i],a[j]]=[a[j],a[i]];
+    }
+    return a;
+}
+
+const gallery = document.getElementById("gallery");
+
+/* ONLY CALLED ON FILTER CHANGE OR INIT */
+function render(){
+
+    gallery.innerHTML = "";
+
+    const emptyState = document.getElementById("emptyState");
+
+    // nothing selected
+    if (ACTIVE.size === 0) {
+        emptyState.style.display = "flex";
+        return;
+    }
+
+    emptyState.style.display = "none";
+
+    const list = shuffle(
+        MASTER.filter(x => ACTIVE.has(x.cat))
+    );
+
+    list.forEach(item => {
+
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const delay = Math.random() * 0.35;
+        const duration = 0.6 + Math.random() * 0.4;
+
+        card.style.animation = `cardReveal ${duration}s cubic-bezier(.22,.61,.36,1) ${delay}s forwards`;
+
+        card.dataset.src = item.src;
+
+        const img = document.createElement("img");
+        img.src = item.src;
+
+        const star = document.createElement("div");
+        star.className = "star-thumb";
+        star.textContent = "★";
+
+        if (BOOKMARKS.has(item.src)) {
+            star.style.display = "block";
+        }
+
+        card.onclick = () => openLightbox(item);
+
+        card.appendChild(img);
+        card.appendChild(star);
+
+        gallery.appendChild(card);
+    });
+}
+
+/* FILTERS */
+document.querySelectorAll(".filter-btn").forEach(btn=>{
+    btn.onclick=()=>{
+        const cat=btn.dataset.cat;
+        btn.classList.toggle("active");
+
+        if(ACTIVE.has(cat)) ACTIVE.delete(cat);
+        else ACTIVE.add(cat);
+
+        render();
+    };
+});
+
+/* LIGHTBOX */
+const lightbox=document.getElementById("lightbox");
+const lightboxImg=document.getElementById("lightboxImg");
+const starBtn=document.getElementById("starBtn");
+
+let current=null;
+
+function openLightbox(item){
+    current=item;
+    lightboxImg.src=item.src;
+    updateStar();
+    lightbox.style.display="flex";
+}
+
+function updateStar(){
+    if(BOOKMARKS.has(current.src)){
+        starBtn.textContent = "★";
+        starBtn.style.color = "gold";
+    } else {
+        starBtn.textContent = "☆";
+        starBtn.style.color = "white";
+    }
+}
+
+starBtn.onclick = () => {
+    if (BOOKMARKS.has(current.src)) {
+        BOOKMARKS.delete(current.src);
+    } else {
+        BOOKMARKS.set(current.src, current);
+    }
+
+    updateStar();
+    updateBookmarkUI();
+
+    // 🔥 update ONLY thumbnails in DOM (no rerender)
+    const card = document.querySelector(`[data-src="${current.src}"]`);
+    if (card) {
+        const star = card.querySelector(".star-thumb");
+        if (BOOKMARKS.has(current.src)) {
+            star.style.display = "block";
+        } else {
+            star.style.display = "none";
+        }
+    }
+};
+
+/* close by clicking outside */
+lightbox.onclick=(e)=>{
+    if(e.target.id==="lightbox") lightbox.style.display="none";
+};
+
+/* BOOKMARK UI */
+const bookmarkBtn=document.getElementById("bookmarkBtn");
+const bookmarkView=document.getElementById("bookmarkView");
+
+function updateBookmarkUI(){
+    bookmarkBtn.textContent=`Bookmarked (${BOOKMARKS.size})`;
+}
+
+bookmarkBtn.onclick=()=>{
+    bookmarkView.innerHTML="";
+
+    const header=document.createElement("div");
+    header.className="bookmark-header";
+    header.innerHTML=`
+        <h2>Bookmarked Items</h2>
+        <p>${BOOKMARKS.size} saved items</p>
+    `;
+
+    const grid=document.createElement("div");
+    grid.className="bookmark-grid";
+
+    BOOKMARKS.forEach(item=>{
+        const el=document.createElement("div");
+        el.className="bookmark-item";
+
+        el.innerHTML=`
+            <img src="${item.src}" />
+            <div class="caption">
+                Category: ${item.cat}<br/>
+                File: ${item.file}
+            </div>
+        `;
+
+        el.onclick=()=>openLightbox(item);
+
+        grid.appendChild(el);
+    });
+
+    bookmarkView.appendChild(header);
+    bookmarkView.appendChild(grid);
+    bookmarkView.style.display="block";
+};
+
+bookmarkView.onclick=(e)=>{
+    if(e.target.id==="bookmarkView")
+        bookmarkView.style.display="none";
+};
+
+/* INIT */
+updateBookmarkUI();
+render();
+</script>
+
+</body>
+</html>
